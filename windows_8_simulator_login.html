@@ -1,0 +1,226 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Windows 8 Simulator - BlueOS</title>
+    <style>
+        body {
+            margin: 0;
+            font-family: Arial, sans-serif;
+            background-color: #0078d7;
+            overflow: hidden;
+        }
+
+        .boot-screen, .login-screen, .lock-screen, .start-screen, .app {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .boot-screen {
+            background-color: #001f3f;
+            color: white;
+            font-size: 2em;
+            z-index: 1003;
+        }
+
+        .login-screen {
+            background-color: #003366;
+            color: white;
+            z-index: 1002;
+        }
+
+        .login-screen input {
+            padding: 10px;
+            margin: 10px;
+            font-size: 1em;
+            border-radius: 5px;
+            border: none;
+        }
+
+        .login-screen button {
+            padding: 10px 20px;
+            font-size: 1em;
+            border-radius: 5px;
+            border: none;
+            background-color: #0078d7;
+            color: white;
+            cursor: pointer;
+        }
+
+        .lock-screen {
+            background: url('https://images.unsplash.com/photo-1506744038136-46273834b3fb') no-repeat center center fixed;
+            background-size: cover;
+            color: white;
+            z-index: 1001;
+        }
+
+        .lock-screen h1 {
+            font-size: 2em;
+        }
+
+        .lock-screen button {
+            background-color: #0078d7;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+
+        .start-screen {
+            display: none;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 10px;
+            padding: 20px;
+            background-color: #0078d7;
+            overflow-y: auto;
+            z-index: 1000;
+        }
+
+        .tile {
+            background-color: rgba(255, 255, 255, 0.8);
+            color: #0078d7;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 150px;
+            border-radius: 5px;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+            cursor: pointer;
+            transition: transform 0.2s;
+            font-size: 1.2em;
+            text-align: center;
+        }
+
+        .tile:hover {
+            transform: scale(1.05);
+        }
+
+        .app {
+            background-color: white;
+            z-index: 1004;
+            display: none;
+            padding: 20px;
+        }
+
+        .app iframe {
+            width: 100%;
+            height: 85%;
+            border: none;
+        }
+
+        .app button {
+            background-color: #0078d7;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            font-size: 1em;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .url-bar {
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 1em;
+        }
+    </style>
+</head>
+<body>
+    <div class="boot-screen" id="bootScreen">
+        <div>BlueOS</div>
+        <div>Loading...</div>
+    </div>
+
+    <div class="login-screen" id="loginScreen" style="display:none;">
+        <h2>Login to BlueOS</h2>
+        <input type="text" placeholder="Username">
+        <input type="password" placeholder="Password">
+        <button onclick="showLockScreen()">Login</button>
+    </div>
+
+    <div class="lock-screen" id="lockScreen" style="display:none;">
+        <h1>Welcome to BlueOS</h1>
+        <button id="unlockButton">Unlock</button>
+    </div>
+
+    <div class="start-screen" id="startScreen">
+        <div class="tile" onclick="openApp('chrome')">Chrome<br><img src="https://www.google.com/chrome/static/images/chrome-logo-m108.svg" alt="Chrome Logo" width="50"></div>
+        <div class="tile" onclick="openApp('fileExplorer')">File Explorer</div>
+        <div class="tile" onclick="openApp('browser')">Browser</div>
+    </div>
+
+    <div class="app" id="chrome">
+        <button onclick="closeApp('chrome')">Close</button>
+        <input type="text" class="url-bar" id="chromeURL" value="https://google.com/?igu=1">
+        <iframe id="chromeIframe" src="https://google.com/?igu=1"></iframe>
+    </div>
+
+    <div class="app" id="fileExplorer">
+        <button onclick="closeApp('fileExplorer')">Close</button>
+        <p>File Explorer Content</p>
+    </div>
+
+    <div class="app" id="browser">
+        <button onclick="closeApp('browser')">Close</button>
+        <input type="text" class="url-bar" id="browserURL" value="https://google.com/?igu=1">
+        <iframe id="browserIframe" src="https://google.com/?igu=1"></iframe>
+    </div>
+
+    <script>
+        setTimeout(() => {
+            document.getElementById('bootScreen').style.display = 'none';
+            document.getElementById('loginScreen').style.display = 'flex';
+        }, 3000);
+
+        function showLockScreen() {
+            document.getElementById('loginScreen').style.display = 'none';
+            document.getElementById('lockScreen').style.display = 'flex';
+        }
+
+        const unlockButton = document.getElementById('unlockButton');
+        const startScreen = document.getElementById('startScreen');
+
+        unlockButton.addEventListener('click', () => {
+            document.getElementById('lockScreen').style.display = 'none';
+            startScreen.style.display = 'grid';
+        });
+
+        function openApp(appId) {
+            document.getElementById(appId).style.display = 'block';
+            startScreen.style.display = 'none';
+        }
+
+        function closeApp(appId) {
+            document.getElementById(appId).style.display = 'none';
+            startScreen.style.display = 'grid';
+        }
+
+        document.getElementById('chromeURL').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                document.getElementById('chromeIframe').src = this.value;
+            }
+        });
+
+        document.getElementById('browserURL').addEventListener('keypress', function(event) {
+            if (event.key === 'Enter') {
+                document.getElementById('browserIframe').src = this.value;
+            }
+        });
+    </script>
+</body>
+</html>
